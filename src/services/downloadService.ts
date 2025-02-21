@@ -34,14 +34,10 @@ export class DownloadService {
     isBatchDownload: boolean = false
   ): Promise<void> {
     try {
-      if (!config.API_BASE_URL) {
-        throw new Error('API_BASE_URL is not configured');
-      }
-
-      console.log('Download config:', {
-        API_URL: config.API_BASE_URL,
+      console.log('Starting download with config:', {
+        apiUrl: config.API_BASE_URL,
         videoId: video.id,
-        accessToken: this.accessToken ? 'present' : 'missing'
+        filename
       });
 
       const response = await fetch(`${config.API_BASE_URL}/api/videos/${video.id}/download`, {
@@ -50,8 +46,7 @@ export class DownloadService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`
         },
-        body: JSON.stringify({ filename: this.sanitizeFilename(filename) }),
-        credentials: 'include'
+        body: JSON.stringify({ filename: this.sanitizeFilename(filename) })
       });
 
       console.log('Download response:', {

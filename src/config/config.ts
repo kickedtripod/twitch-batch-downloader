@@ -14,7 +14,11 @@ const config: ClientConfig = {
   ]
 };
 
-// Add this debug log
-console.log('Config loaded:', config);
+// Add debug logging
+console.log('API Configuration:', {
+  baseUrl: config.API_BASE_URL,
+  isDev: import.meta.env.DEV,
+  mode: import.meta.env.MODE
+});
 
 export default config; 
