@@ -12,14 +12,11 @@ WORKDIR /app
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod +x /usr/local/bin/yt-dlp
 
-# Copy package files and TypeScript config first
-COPY package*.json tsconfig.json ./
+# Copy all application files first
+COPY . .
 
 # Install dependencies
 RUN npm install
-
-# Copy the rest of the application
-COPY . .
 
 # Build TypeScript
 RUN npm run build
