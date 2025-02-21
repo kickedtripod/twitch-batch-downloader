@@ -451,35 +451,36 @@ const fileHandler = (
 };
 
 // First, specific routes
-app.get('/api/health', async (req: Request, res: Response) => {
+app.get('/api/health', (req: Request, res: Response) => {
   try {
-    const ytDlp = spawn(ytDlpPath, ['--version']);
+    // Check if yt-dlp is installed
+    const ytDlp = spawn(config.ytDlpPath, ['--version']);
     
     let version = '';
     ytDlp.stdout.on('data', (data) => {
       version += data.toString();
     });
 
-    await new Promise((resolve) => ytDlp.on('close', resolve));
-
-    res.json({ 
-      status: 'ok',
-      ytdlp: {
-        path: ytDlpPath,
-        version: version.trim(),
-      },
-      downloadsDir: {
-        path: config.downloadsDir,
-        exists: fs.existsSync(config.downloadsDir),
-        writable: fs.accessSync(config.downloadsDir, fs.constants.W_OK)
-      }
+    ytDlp.on('close', (code) => {
+      res.json({ 
+        status: 'ok',
+        ytdlp: {
+          path: config.ytDlpPath,
+          version: version.trim(),
+        },
+        downloadsDir: {
+          path: config.downloadsDir,
+          exists: fs.existsSync(config.downloadsDir),
+          writable: true
+        }
+      });
     });
   } catch (error) {
     console.error('Health check error:', error);
     res.status(500).json({ 
       status: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
-      ytDlpPath
+      ytDlpPath: config.ytDlpPath
     });
   }
 });

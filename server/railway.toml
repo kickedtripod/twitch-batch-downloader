@@ -5,6 +5,7 @@ watchPatterns = ["**"]
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/api/health"
+healthcheckTimeout = "30s"
 restartPolicyType = "ON_FAILURE"
 
 [[deploy.envs]]
