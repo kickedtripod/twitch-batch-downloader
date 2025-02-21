@@ -1,5 +1,17 @@
 [phases.setup]
-nixPkgs = ['python3', 'nodejs', 'curl']
+nixPkgs = ['python3', 'nodejs', 'curl', 'ffmpeg']
+aptPkgs = ['python3', 'python3-pip', 'ffmpeg']
+
+[phases.build]
+cmds = [
+  "npm install",
+  "npm run build",
+  "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp",
+  "chmod +x yt-dlp"
+]
 
 [start]
-cmd = "npm run build && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp && chmod +x yt-dlp && node dist/index.js" 
+cmd = "node dist/index.js"
+
+[phases.setup.env]
+PATH = "/usr/bin:/usr/local/bin:$PATH" 
