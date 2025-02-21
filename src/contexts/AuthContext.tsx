@@ -30,15 +30,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Build the authorization URL with minimal parameters
     const params = new URLSearchParams();
     params.append('client_id', config.TWITCH_CLIENT_ID);
-    params.append('redirect_uri', 'http://localhost:3007/auth/callback');
+    params.append('redirect_uri', config.TWITCH_REDIRECT_URI);
     params.append('response_type', 'token');
-    params.append('scope', 'user:read:broadcast channel:read:vods');
+    params.append('scope', config.REQUIRED_SCOPES.join(' '));
 
     const authUrl = `https://id.twitch.tv/oauth2/authorize?${params.toString()}`;
 
     // Debug logging
     console.log('Client ID:', config.TWITCH_CLIENT_ID);
-    console.log('Redirect URI:', 'http://localhost:3007/auth/callback');
+    console.log('Redirect URI:', config.TWITCH_REDIRECT_URI);
     console.log('Full Auth URL:', authUrl);
 
     window.location.href = authUrl;
