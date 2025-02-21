@@ -7,16 +7,16 @@ import AuthCallback from './pages/AuthCallback';
 
 const App: FC = () => {
   return (
-    <AuthProvider>
-      <VideoProvider>
-        <Router>
+    <Router>
+      <AuthProvider>
+        <VideoProvider>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
-        </Router>
-      </VideoProvider>
-    </AuthProvider>
+        </VideoProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
