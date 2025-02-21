@@ -295,6 +295,39 @@ const fileHandler = (
 router.post('/api/videos/:videoId/download', downloadHandler);
 router.get('/api/videos/download-zip', zipHandler);
 router.get('/api/videos/:videoId/file', fileHandler);
+router.get('/api/health', async (req: Request, res: Response) => {
+  try {
+    // Check if yt-dlp exists and get its version
+    const ytDlp = spawn(ytDlpPath, ['--version']);
+    
+    let version = '';
+    ytDlp.stdout.on('data', (data) => {
+      version += data.toString();
+    });
+
+    await new Promise((resolve) => ytDlp.on('close', resolve));
+
+    res.json({ 
+      status: 'ok',
+      ytdlp: {
+        path: ytDlpPath,
+        version: version.trim(),
+      },
+      downloadsDir: {
+        path: downloadsDir,
+        exists: fs.existsSync(downloadsDir),
+        writable: fs.accessSync(downloadsDir, fs.constants.W_OK)
+      }
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      ytDlpPath
+    });
+  }
+});
 
 // Use the router
 app.use(router);
