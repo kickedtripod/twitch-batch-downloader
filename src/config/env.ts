@@ -24,10 +24,12 @@ console.log('TWITCH_CLIENT_ID:', TWITCH_CLIENT_ID);
 console.log('API_BASE_URL:', API_BASE_URL);
 console.log('REDIRECT_URI:', REDIRECT_URI);
 
+console.log('API URL:', import.meta.env.VITE_API_BASE_URL);
+
 export const config = {
-  API_BASE_URL: API_BASE_URL,
-  TWITCH_CLIENT_ID: TWITCH_CLIENT_ID,
-  TWITCH_REDIRECT_URI: REDIRECT_URI,
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  TWITCH_CLIENT_ID: import.meta.env.VITE_TWITCH_CLIENT_ID!,
+  TWITCH_REDIRECT_URI: import.meta.env.VITE_TWITCH_REDIRECT_URI!,
   REQUIRED_SCOPES: ['user:read:follows', 'user:read:subscriptions']
 } as const;
 
