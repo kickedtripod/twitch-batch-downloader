@@ -13,7 +13,7 @@ const router = Router();
 const port = process.env.PORT || 3001;
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:5173',
-  'https://twitch-batch-downloader-b9kshux4w-john-horstmanns-projects.vercel.app'
+  'https://twitch-batch-downloader.vercel.app'
 ];
 
 app.use(cors({
