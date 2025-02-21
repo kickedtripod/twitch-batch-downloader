@@ -452,37 +452,11 @@ const fileHandler = (
 
 // First, specific routes
 app.get('/api/health', (req: Request, res: Response) => {
-  try {
-    // Check if yt-dlp is installed
-    const ytDlp = spawn(config.ytDlpPath, ['--version']);
-    
-    let version = '';
-    ytDlp.stdout.on('data', (data) => {
-      version += data.toString();
-    });
-
-    ytDlp.on('close', (code) => {
-      res.json({ 
-        status: 'ok',
-        ytdlp: {
-          path: config.ytDlpPath,
-          version: version.trim(),
-        },
-        downloadsDir: {
-          path: config.downloadsDir,
-          exists: fs.existsSync(config.downloadsDir),
-          writable: true
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Health check error:', error);
-    res.status(500).json({ 
-      status: 'error',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      ytDlpPath: config.ytDlpPath
-    });
-  }
+  res.json({ 
+    status: 'ok',
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.post('/api/videos/:videoId/download', downloadHandler);
@@ -513,12 +487,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // Move the server initialization to the very end of the file
 server = app.listen(Number(port), '0.0.0.0', () => {
   console.log('Starting server with config:', {
-    port: port,
-    nodeEnv: config.nodeEnv,
-    downloadsDir: config.downloadsDir,
-    host: '0.0.0.0',
-    ytDlpPath: config.ytDlpPath,
-    corsOrigin: config.corsOrigin
+    port,
+    nodeEnv: process.env.NODE_ENV,
+    downloadsDir: config.downloadsDir
   });
   console.log(`Server running at http://0.0.0.0:${port}`);
 });
