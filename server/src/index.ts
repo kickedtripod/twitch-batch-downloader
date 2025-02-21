@@ -295,7 +295,12 @@ app.post('/api/videos/:videoId/download', downloadHandler);
 app.get('/api/videos/download-zip', zipHandler);
 app.get('/api/videos/:videoId/file', fileHandler);
 
-// Health check route
+// Add this near your other routes
+app.get('/', (req: Request, res: Response) => {
+  res.json({ message: 'Server is running' });
+});
+
+// Move health check route before error handler
 app.get('/api/health', async (req: Request, res: Response) => {
   try {
     const ytDlp = spawn(ytDlpPath, ['--version']);
