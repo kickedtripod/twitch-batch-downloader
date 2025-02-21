@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { TwitchApiService, TwitchVideo, VideoType } from '../services/twitchApi';
 import { DownloadService, DownloadProgress } from '../services/downloadService';
 import { useAuth } from './AuthContext';
-import { config } from '../config/env';
+import config from "../config/config";
 
 interface VideoContextType {
   videos: TwitchVideo[];
@@ -16,6 +16,10 @@ interface VideoContextType {
   selectAllVideos: () => void;
   clearSelection: () => void;
   downloadSelectedVideos: (filenameTemplate: string) => Promise<void>;
+  videoUrl: string;
+  setVideoUrl: (url: string) => void;
+  setIsLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 interface VideoProviderProps {
@@ -32,6 +36,7 @@ export function VideoProvider({ children }: VideoProviderProps) {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, DownloadProgress>>({});
   const [selectedType, setSelectedType] = useState<VideoType>('all');
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set());
+  const [videoUrl, setVideoUrl] = useState('');
 
   useEffect(() => {
     if (accessToken) {
@@ -154,28 +159,34 @@ export function VideoProvider({ children }: VideoProviderProps) {
   };
 
   return (
-    <VideoContext.Provider value={{ 
-      videos, 
-      isLoading, 
-      error, 
-      downloadProgress, 
-      selectedType,
-      setSelectedType,
-      selectedVideos,
-      toggleVideoSelection,
-      selectAllVideos,
-      clearSelection,
-      downloadSelectedVideos
-    }}>
+    <VideoContext.Provider 
+      value={{ 
+        videos, 
+        isLoading, 
+        error, 
+        downloadProgress, 
+        selectedType,
+        setSelectedType,
+        selectedVideos,
+        toggleVideoSelection,
+        selectAllVideos,
+        clearSelection,
+        downloadSelectedVideos,
+        videoUrl,
+        setVideoUrl,
+        setIsLoading,
+        setError
+      }}
+    >
       {children}
     </VideoContext.Provider>
   );
 }
 
-export function useVideos() {
+export function useVideo() {
   const context = useContext(VideoContext);
   if (context === undefined) {
-    throw new Error('useVideos must be used within a VideoProvider');
+    throw new Error('useVideo must be used within a VideoProvider');
   }
   return context;
 } 

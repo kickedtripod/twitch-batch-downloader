@@ -1,19 +1,23 @@
-import { config } from '../config/env';
+import config from '../config/config';
 
 export type VideoType = 'archive' | 'upload' | 'highlight' | 'all';
 
 export interface TwitchVideo {
   id: string;
   user_id: string;
+  user_login: string;
+  user_name: string;
   title: string;
   description: string;
   created_at: string;
+  published_at: string;
   url: string;
   thumbnail_url: string;
-  duration: string;
-  type: VideoType;
+  viewable: string;
   view_count: number;
-  download_url?: string;
+  language: string;
+  type: string;
+  duration: string;
 }
 
 interface TwitchUser {

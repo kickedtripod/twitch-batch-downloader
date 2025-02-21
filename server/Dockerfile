@@ -1,28 +1,24 @@
-FROM node:18-slim
+FROM node:18-alpine
 
-# Install ffmpeg and other dependencies
-RUN apt-get update && \
-    apt-get install -y ffmpeg curl python3 && \
-    rm -rf /var/lib/apt/lists/*
+# Install required dependencies
+RUN apk add --no-cache \
+    python3 \
+    ffmpeg \
+    curl
 
 WORKDIR /app
 
-# Copy package files
+# Install yt-dlp
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    chmod +x /usr/local/bin/yt-dlp
+
 COPY package*.json ./
 RUN npm install
 
-# Copy source code
 COPY . .
-
-# Build TypeScript
 RUN npm run build
 
-# Download yt-dlp binary and make it executable
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o /usr/local/bin/yt-dlp && \
-    chmod +x /usr/local/bin/yt-dlp && \
-    ln -s /usr/local/bin/yt-dlp /usr/local/bin/youtube-dl
-
-# Create downloads directory and set permissions
+# Create downloads directory
 RUN mkdir -p downloads && \
     chmod 777 downloads
 
@@ -31,4 +27,4 @@ RUN /usr/local/bin/yt-dlp --version
 
 EXPOSE 3001
 
-CMD ["node", "dist/index.js"] 
+CMD ["npm", "start"] 

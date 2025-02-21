@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TwitchVideo } from '../services/twitchApi';
+import config from '../config/config';
 
 interface DownloadOption {
   id: keyof FilenameComponents;

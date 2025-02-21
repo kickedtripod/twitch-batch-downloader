@@ -1,14 +1,13 @@
 import { TwitchVideo } from './twitchApi';
-import { config } from '../config/env';
+import config from '../config/config';
 
 export interface DownloadProgress {
   videoId: string;
-  progress: number;
-  status: 'pending' | 'downloading' | 'completed' | 'error' | 'processing';
-  error?: string;
+  status: string;
+  percent: number;
   speed?: string;
   eta?: string;
-  size?: string;
+  error?: string;
 }
 
 export interface ProgressData {
@@ -67,10 +66,10 @@ export class DownloadService {
         throw new Error(`Failed to start download: ${response.status} ${response.statusText}`);
       }
 
-      // Initialize progress
+      // Initial progress
       onProgress?.({
         videoId: video.id,
-        progress: 0,
+        percent: 0,
         status: 'downloading'
       });
 
@@ -93,7 +92,7 @@ export class DownloadService {
               if (data.type === 'progress') {
                 onProgress?.({
                   videoId: video.id,
-                  progress: data.percent,
+                  percent: data.percent,
                   status: data.status === 'processing' ? 'processing' : 'downloading',
                   speed: data.speed,
                   eta: data.eta
@@ -102,12 +101,12 @@ export class DownloadService {
                 // Handle completion
                 onProgress?.({
                   videoId: video.id,
-                  progress: 100,
+                  percent: 100,
                   status: 'completed'
                 });
 
-                // If this is part of a batch download, don't download immediately
-                if (!data.batchDownload) {
+                // Only download if not batch
+                if (!isBatchDownload) {
                   // Single file download
                   const fileResponse = await fetch(`${config.API_BASE_URL}${data.downloadUrl}`);
                   if (!fileResponse.ok) {
@@ -136,10 +135,66 @@ export class DownloadService {
       console.error('Download error:', error);
       onProgress?.({
         videoId: video.id,
-        progress: 0,
+        percent: 0,
         status: 'error',
         error: error instanceof Error ? error.message : 'Download failed'
       });
+      throw error;
+    }
+  }
+
+  async downloadSelectedVideos(videos: TwitchVideo[], filenameTemplate: string): Promise<void> {
+    try {
+      // Download each video first
+      for (const video of videos) {
+        await this.downloadVideo(
+          video, 
+          filenameTemplate,
+          undefined,  // No progress callback needed
+          true        // Mark as batch download
+        );
+      }
+
+      console.log('All videos processed, requesting zip...');
+
+      // Then request the zip
+      const response = await fetch(`${config.API_BASE_URL}/api/videos/download-zip?files=${videos.map(v => v.id).join(',')}`, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Zip download failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+        throw new Error(`Failed to download zip: ${response.status} ${response.statusText}`);
+      }
+
+      // Handle the zip file download
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('Received empty zip file');
+      }
+
+      console.log('Zip file received:', {
+        size: blob.size,
+        type: blob.type
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'twitch-videos.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading videos:', error);
       throw error;
     }
   }

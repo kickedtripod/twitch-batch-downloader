@@ -1,5 +1,16 @@
 [build]
-builder = "nixpacks"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp && chmod +x yt-dlp && node dist/index.js" 
+startCommand = "npm start"
+healthcheckPath = "/health"
+restartPolicyType = "ON_FAILURE"
+
+[[deploy.envs]]
+key = "NODE_ENV"
+value = "production"
+
+[[deploy.envs]]
+key = "CORS_ORIGIN"
+value = "https://twitch-batch-downloader.vercel.app" 

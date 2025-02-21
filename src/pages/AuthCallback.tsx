@@ -1,53 +1,33 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-export default function AuthCallback() {
+const AuthCallback = () => {
   const navigate = useNavigate();
+  const { setAccessToken, setIsAuthenticated } = useAuth();
 
   useEffect(() => {
-    try {
-      // Debug: Log full URL
-      console.log('Full URL:', window.location.href);
-      
-      // Get the hash fragment from the URL
-      const hash = window.location.hash;
-      console.log('Hash:', hash);
+    // Get the access token from the URL hash
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
 
-      if (!hash) {
-        console.error('No hash fragment found in URL');
-        navigate('/');
-        return;
-      }
-
-      // Parse the hash (remove the leading #)
-      const params = new URLSearchParams(hash.substring(1));
-      
-      // Debug: Log all params
-      console.log('All params:', Object.fromEntries(params.entries()));
-
-      const accessToken = params.get('access_token');
-      const scope = params.get('scope');
-      
-      console.log('Access Token:', accessToken ? 'Found' : 'Not found');
-      console.log('Scope:', scope);
-
-      if (accessToken) {
-        localStorage.setItem('twitch_access_token', accessToken);
-        console.log('Token saved to localStorage');
-        navigate('/', { replace: true });
-      } else {
-        console.error('No access token found in URL params');
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Error in auth callback:', error);
+    if (accessToken) {
+      localStorage.setItem('twitch_access_token', accessToken);
+      setAccessToken(accessToken);
+      setIsAuthenticated(true);
+      navigate('/');
+    } else {
+      console.error('No access token found in URL');
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, setAccessToken, setIsAuthenticated]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
       <p className="text-lg">Completing authentication...</p>
     </div>
   );
-} 
+};
+
+export default AuthCallback; 
