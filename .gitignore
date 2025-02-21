@@ -15,6 +15,9 @@ build/
 server/.env
 server/.env.*
 
+# Allow example files
+!*.example
+
 # Server specific
 server/downloads/
 server/yt-dlp
@@ -34,20 +37,11 @@ yarn-debug.log*
 yarn-error.log*
 debug.log
 
-# System Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
 # Vercel
 .vercel
 
 # Railway
 .railway
 
-# Allow example files
-!*.example
+# Video files
+*.mp4
