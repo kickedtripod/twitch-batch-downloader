@@ -35,7 +35,7 @@ const corsMiddleware: RequestHandler = (req: Request, res: Response, next: NextF
 // Apply the middleware
 app.use(corsMiddleware);
 
-// CORS configuration
+// Simplified CORS setup
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -44,8 +44,16 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
+
+// Handle OPTIONS preflight
+app.options('*', (req, res) => {
+  res.status(200).end();
+});
+
 app.use(express.json());
 
 // Create downloads directory if it doesn't exist
