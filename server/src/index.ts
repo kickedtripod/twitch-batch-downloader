@@ -359,9 +359,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-  console.log(`Downloads directory: ${downloadsDir}`);
+// Add this log to see what port we're using
+console.log('Starting server with config:', {
+  port: port,
+  nodeEnv: process.env.NODE_ENV,
+  downloadsDir: downloadsDir
+});
+
+app.listen(Number(port), '0.0.0.0', () => {
+  console.log(`Server running at http://0.0.0.0:${port}`);
 });
 
 // Add a helper function to create zip files
