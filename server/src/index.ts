@@ -38,6 +38,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add these near the top after middleware
+app.use((req, res, next) => {
+  console.log('Incoming request:', {
+    path: req.path,
+    method: req.method,
+    headers: req.headers
+  });
+  next();
+});
+
 // Add this function near the top of the file
 function sanitizeFilename(filename: string): string {
   return filename
@@ -290,17 +300,7 @@ const fileHandler = (
   });
 };
 
-// Register routes directly on app instead of router
-app.post('/api/videos/:videoId/download', downloadHandler);
-app.get('/api/videos/download-zip', zipHandler);
-app.get('/api/videos/:videoId/file', fileHandler);
-
-// Add this near your other routes
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Server is running' });
-});
-
-// Move health check route before error handler
+// First, specific routes
 app.get('/api/health', async (req: Request, res: Response) => {
   try {
     const ytDlp = spawn(ytDlpPath, ['--version']);
@@ -332,6 +332,21 @@ app.get('/api/health', async (req: Request, res: Response) => {
       ytDlpPath
     });
   }
+});
+
+app.post('/api/videos/:videoId/download', downloadHandler);
+app.get('/api/videos/download-zip', zipHandler);
+app.get('/api/videos/:videoId/file', fileHandler);
+
+// Last, catch-all route
+app.get('*', (req: Request, res: Response) => {
+  res.json({
+    message: 'Server is running',
+    path: req.path,
+    method: req.method,
+    env: process.env.NODE_ENV,
+    port: port
+  });
 });
 
 // Error handler
