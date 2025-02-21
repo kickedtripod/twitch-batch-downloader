@@ -16,8 +16,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'https://twitch-batch-downloader.vercel.app'  // Remove trailing slash
 ];
 
-// Fix the middleware typing
-app.use((req: Request, res: Response, next: NextFunction) => {
+// Create the middleware function with correct typing
+const corsMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -30,9 +30,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     return res.status(200).end();
   }
   next();
-});
+};
 
-// Simplify the CORS middleware
+// Apply the middleware
+app.use(corsMiddleware);
+
+// CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
