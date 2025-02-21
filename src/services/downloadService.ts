@@ -1,5 +1,6 @@
 import { TwitchVideo } from './twitchApi';
 import config from '../config/config';
+import { Video } from '../types';
 
 export interface DownloadProgress {
   videoId: string;
@@ -16,6 +17,11 @@ export interface ProgressData {
   speed?: string;
   eta?: string;
   status?: 'downloading' | 'processing';
+}
+
+interface FilenameOptions {
+  includeDate: boolean;
+  includeType: boolean;
 }
 
 export class DownloadService {
@@ -193,4 +199,39 @@ export class DownloadService {
       throw error;
     }
   }
-} 
+
+  async downloadVideoByVideoId(videoId: string, title: string, options: FilenameOptions): Promise<void> {
+    try {
+      const response = await fetch(`${config.API_BASE_URL}/api/videos/${videoId}/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        body: JSON.stringify({
+          filename: title,
+          ...options,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download video');
+      }
+
+      // Handle the response as needed
+    } catch (error) {
+      console.error('Error downloading video:', error);
+      throw error;
+    }
+  }
+}
+
+export const downloadVideo = async (videoId: string, title: string, options: FilenameOptions): Promise<void> => {
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    throw new Error('No access token found');
+  }
+
+  const downloadService = new DownloadService(accessToken);
+  await downloadService.downloadVideoByVideoId(videoId, title, options);
+}; 

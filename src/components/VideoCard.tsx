@@ -1,26 +1,41 @@
 import React, { useState } from 'react';
 import { FormControlLabel, Checkbox } from '@mui/material';
+import { Video } from '../types';
+import { downloadVideo } from '../services/downloadService';
 
-// Add state for selected options
-const [includeDate, setIncludeDate] = useState(false);
-const [includeType, setIncludeType] = useState(false);
+interface VideoCardProps {
+  video: Video;
+}
 
-// Update the download function
-const handleDownload = async () => {
-  const filenameOptions = {
-    includeDate,
-    includeType,
+const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
+  // Add state for selected options
+  const [includeDate, setIncludeDate] = useState(false);
+  const [includeType, setIncludeType] = useState(false);
+
+  // Update the download function
+  const handleDownload = async () => {
+    const filenameOptions = {
+      includeDate,
+      includeType,
+    };
+    await downloadVideo(video.id, video.title, filenameOptions);
+    // ...
   };
-  await downloadVideo(video.id, video.title, filenameOptions);
-  // ...
+
+  return (
+    <div>
+      <div>
+        <FormControlLabel
+          control={<Checkbox checked={includeDate} onChange={(e) => setIncludeDate(e.target.checked)} />}
+          label="Include Date"
+        />
+        <FormControlLabel
+          control={<Checkbox checked={includeType} onChange={(e) => setIncludeType(e.target.checked)} />}
+          label="Include Type"
+        />
+      </div>
+    </div>
+  );
 };
 
-// Add checkboxes for options
-<FormControlLabel
-  control={<Checkbox checked={includeDate} onChange={(e) => setIncludeDate(e.target.checked)} />}
-  label="Include Date"
-/>
-<FormControlLabel
-  control={<Checkbox checked={includeType} onChange={(e) => setIncludeType(e.target.checked)} />}
-  label="Include Type"
-/> 
+export default VideoCard; 
