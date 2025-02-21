@@ -12,12 +12,12 @@ const app = express();
 const router = Router();
 const port = process.env.PORT || 3001;
 
-// Simpler CORS configuration
+// CORS configuration
 app.use(cors({
-  origin: 'https://twitch-batch-downloader.vercel.app',
+  origin: true, // Allow all origins temporarily for debugging
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-batch-download']
 }));
 
 app.use(express.json());
@@ -28,9 +28,14 @@ if (!fs.existsSync(downloadsDir)) {
   fs.mkdirSync(downloadsDir, { recursive: true });
 }
 
-// Log all requests
+// Log all requests for debugging
 app.use((req, res, next) => {
-  console.log('Incoming request:', req.method, req.url);
+  console.log('Request:', {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    headers: req.headers
+  });
   next();
 });
 
