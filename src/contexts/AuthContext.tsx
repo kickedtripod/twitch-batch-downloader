@@ -27,7 +27,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = () => {
-    // Build the authorization URL with minimal parameters
     const params = new URLSearchParams();
     params.append('client_id', config.TWITCH_CLIENT_ID);
     params.append('redirect_uri', config.TWITCH_REDIRECT_URI);
@@ -35,11 +34,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     params.append('scope', config.REQUIRED_SCOPES.join(' '));
 
     const authUrl = `https://id.twitch.tv/oauth2/authorize?${params.toString()}`;
-
-    // Debug logging
-    console.log('Client ID:', config.TWITCH_CLIENT_ID);
-    console.log('Redirect URI:', config.TWITCH_REDIRECT_URI);
-    console.log('Full Auth URL:', authUrl);
+    
+    console.log('Auth configuration:', {
+      clientId: config.TWITCH_CLIENT_ID,
+      redirectUri: config.TWITCH_REDIRECT_URI,
+      scopes: config.REQUIRED_SCOPES,
+      fullUrl: authUrl
+    });
 
     window.location.href = authUrl;
   };
