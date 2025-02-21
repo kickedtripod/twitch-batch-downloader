@@ -7,11 +7,13 @@ cmds = [
   "npm install",
   "npm run build",
   "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp",
-  "chmod +x yt-dlp"
+  "chmod +x yt-dlp",
+  "ln -s /usr/bin/python3 /usr/local/bin/python3"
 ]
 
 [start]
 cmd = "node dist/index.js"
 
 [phases.setup.env]
-PATH = "/usr/bin:/usr/local/bin:$PATH" 
+PATH = "/usr/local/bin:/usr/bin:$PATH"
+PYTHONPATH = "/usr/local/lib/python3.9/site-packages:/usr/lib/python3/dist-packages" 
