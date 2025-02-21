@@ -1,1 +1,1 @@
-web: cd server && npm install && npm run start 
+web: cd server && rm -rf node_modules && npm install && npm run build && npm start 
