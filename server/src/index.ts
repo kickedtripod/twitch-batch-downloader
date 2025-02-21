@@ -291,10 +291,7 @@ const fileHandler = (
   });
 };
 
-// Move this line BEFORE registering routes
-app.use(router);
-
-// Register routes
+// First register all routes
 router.post('/api/videos/:videoId/download', downloadHandler);
 router.get('/api/videos/download-zip', zipHandler);
 router.get('/api/videos/:videoId/file', fileHandler);
@@ -332,7 +329,10 @@ router.get('/api/health', async (req: Request, res: Response) => {
   }
 });
 
-// Move the error handler AFTER all routes and middleware
+// Then use the router after routes are registered
+app.use(router);
+
+// Error handler comes last
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error:', err);
   res.status(500).json({ 
