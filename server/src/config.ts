@@ -16,11 +16,7 @@ const config: ServerConfig = {
   port: Number(process.env.PORT) || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',
   downloadsDir: path.resolve(__dirname, '../downloads'),
-  ytDlpPath: process.env.YT_DLP_PATH || (
-    process.env.NODE_ENV === 'production'
-      ? '/usr/local/bin/yt-dlp'
-      : '/opt/homebrew/bin/yt-dlp'
-  ),
+  ytDlpPath: '/usr/local/bin/yt-dlp',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173'
 };
 
