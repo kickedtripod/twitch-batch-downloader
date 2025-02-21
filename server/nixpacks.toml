@@ -6,14 +6,18 @@ aptPkgs = ['python3', 'python3-pip', 'ffmpeg']
 cmds = [
   "npm install",
   "npm run build",
+  "which python3",  # Debug: check Python location
+  "python3 --version",  # Debug: check Python version
   "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp",
   "chmod +x yt-dlp",
-  "ln -s /usr/bin/python3 /usr/local/bin/python3"
+  "mkdir -p /usr/local/bin",
+  "cp /nix/store/*/bin/python3 /usr/local/bin/python3",  # Copy Python from Nix store
+  "./yt-dlp --version"  # Debug: verify yt-dlp works
 ]
 
 [start]
 cmd = "node dist/index.js"
 
 [phases.setup.env]
-PATH = "/usr/local/bin:/usr/bin:$PATH"
+PATH = "/usr/local/bin:/nix/store/*/bin:/usr/bin:$PATH"
 PYTHONPATH = "/usr/local/lib/python3.9/site-packages:/usr/lib/python3/dist-packages" 
