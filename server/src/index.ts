@@ -10,8 +10,8 @@ dotenv.config();
 
 // Add this after your imports and before app initialization
 const ytDlpPath = process.env.NODE_ENV === 'production' 
-  ? '/usr/local/bin/python3 ./yt-dlp'  // Explicitly use Python path
-  : '/opt/homebrew/bin/yt-dlp'; // Local path for development
+  ? path.join(__dirname, '../yt-dlp')  // Use absolute path
+  : '/opt/homebrew/bin/yt-dlp';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -157,30 +157,26 @@ const downloadHandler = async (
     const videoUrl = `https://www.twitch.tv/videos/${videoId}`;
     const outputPath = path.join(downloadsDir, `${videoId}.mp4`);
 
-    const ytDlp = process.env.NODE_ENV === 'production'
-      ? spawn('/usr/local/bin/python3', [
-          './yt-dlp',
-          videoUrl,
-          '-o', outputPath,
-          '-f', 'bestvideo+bestaudio/best',
-          '--merge-output-format', 'mp4',
-          '--newline',
-          '--no-warnings',
-          '--no-colors',
-          '--progress',
-          '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
-        ])
-      : spawn(ytDlpPath, [
-          videoUrl,
-          '-o', outputPath,
-          '-f', 'bestvideo+bestaudio/best',
-          '--merge-output-format', 'mp4',
-          '--newline',
-          '--no-warnings',
-          '--no-colors',
-          '--progress',
-          '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
-        ]);
+    console.log('Starting download with config:', {
+      ytDlpPath,
+      videoUrl,
+      outputPath,
+      cwd: process.cwd(),
+      __dirname,
+      exists: fs.existsSync(ytDlpPath)
+    });
+
+    const ytDlp = spawn(ytDlpPath, [
+      videoUrl,
+      '-o', outputPath,
+      '-f', 'bestvideo+bestaudio/best',
+      '--merge-output-format', 'mp4',
+      '--newline',
+      '--no-warnings',
+      '--no-colors',
+      '--progress',
+      '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
+    ]);
 
     let lastProgress = 0;
 
