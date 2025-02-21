@@ -8,20 +8,21 @@
     "postinstall": "npm run build && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp && chmod +x yt-dlp"
   },
   "dependencies": {
-    "@types/archiver": "^6.0.3",
     "archiver": "^7.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "progress-stream": "^2.0.0",
-    "typescript": "^5.7.3",
+    "progress-stream": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.3",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^20.17.19",
-    "ts-node": "^10.9.2"
-  },
-  "devDependencies": {
-    "@types/progress-stream": "^2.0.5"
+    "@types/progress-stream": "^2.0.5",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=18.0.0"
