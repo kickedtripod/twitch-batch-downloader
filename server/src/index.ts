@@ -1,4 +1,4 @@
-import express, { Request, Response, Router, NextFunction, RequestHandler } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -9,7 +9,6 @@ import archiver from 'archiver';
 dotenv.config();
 
 const app = express();
-const router = Router();
 const port = process.env.PORT || 3001;
 
 // CORS configuration
@@ -291,13 +290,14 @@ const fileHandler = (
   });
 };
 
-// First register all routes
-router.post('/api/videos/:videoId/download', downloadHandler);
-router.get('/api/videos/download-zip', zipHandler);
-router.get('/api/videos/:videoId/file', fileHandler);
-router.get('/api/health', async (req: Request, res: Response) => {
+// Register routes directly on app instead of router
+app.post('/api/videos/:videoId/download', downloadHandler);
+app.get('/api/videos/download-zip', zipHandler);
+app.get('/api/videos/:videoId/file', fileHandler);
+
+// Health check route
+app.get('/api/health', async (req: Request, res: Response) => {
   try {
-    // Check if yt-dlp exists and get its version
     const ytDlp = spawn(ytDlpPath, ['--version']);
     
     let version = '';
@@ -329,10 +329,7 @@ router.get('/api/health', async (req: Request, res: Response) => {
   }
 });
 
-// Then use the router after routes are registered
-app.use(router);
-
-// Error handler comes last
+// Error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error:', err);
   res.status(500).json({ 
