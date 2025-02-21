@@ -6,15 +6,14 @@ RUN apk add --no-cache \
     ffmpeg \
     curl
 
-WORKDIR /app/server
+WORKDIR /app
 
 # Install yt-dlp
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod +x /usr/local/bin/yt-dlp
 
 # Copy package files and TypeScript config first
-COPY package*.json ./
-COPY tsconfig.json ./
+COPY package*.json tsconfig.json ./
 
 # Install dependencies
 RUN npm install
