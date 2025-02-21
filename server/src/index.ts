@@ -359,15 +359,39 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// Add this log to see what port we're using
-console.log('Starting server with config:', {
-  port: port,
-  nodeEnv: process.env.NODE_ENV,
-  downloadsDir: downloadsDir
+// Remove the duplicate SIGTERM handlers and replace with this near the top after imports
+let server: ReturnType<typeof app.listen>;
+
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM signal. Performing graceful shutdown...');
+  if (server) {
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
 });
 
-app.listen(Number(port), '0.0.0.0', () => {
+// Near the bottom, replace both the server.listen and the duplicate SIGTERM handler with:
+server = app.listen(Number(port), '0.0.0.0', () => {
+  console.log('Starting server with config:', {
+    port: port,
+    nodeEnv: process.env.NODE_ENV,
+    downloadsDir: downloadsDir,
+    host: '0.0.0.0',
+    ytDlpPath: ytDlpPath
+  });
   console.log(`Server running at http://0.0.0.0:${port}`);
+});
+
+server.on('error', (error: NodeJS.ErrnoException) => {
+  console.error('Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${port} is already in use`);
+  }
+  process.exit(1);
 });
 
 // Add a helper function to create zip files
