@@ -1,7 +1,9 @@
 FROM node:18-slim
 
-# Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg curl && rm -rf /var/lib/apt/lists/*
+# Install ffmpeg and other dependencies
+RUN apt-get update && \
+    apt-get install -y ffmpeg curl python3 && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -15,12 +17,17 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
-# Download yt-dlp binary
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o yt-dlp && \
-    chmod +x yt-dlp
+# Download yt-dlp binary and make it executable
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o /usr/local/bin/yt-dlp && \
+    chmod +x /usr/local/bin/yt-dlp && \
+    ln -s /usr/local/bin/yt-dlp /usr/local/bin/youtube-dl
 
-# Create downloads directory
-RUN mkdir -p downloads
+# Create downloads directory and set permissions
+RUN mkdir -p downloads && \
+    chmod 777 downloads
+
+# Test yt-dlp installation
+RUN /usr/local/bin/yt-dlp --version
 
 EXPOSE 3001
 

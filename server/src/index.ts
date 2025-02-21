@@ -10,7 +10,7 @@ dotenv.config();
 
 // Add this after your imports and before app initialization
 const ytDlpPath = process.env.NODE_ENV === 'production' 
-  ? './yt-dlp'  // Use local path in Docker
+  ? '/usr/local/bin/yt-dlp'  // Use installed binary in production
   : '/opt/homebrew/bin/yt-dlp';
 
 const app = express();
