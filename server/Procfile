@@ -1,1 +1,1 @@
-web: npm run build && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp && chmod +x yt-dlp && node dist/index.js 
+web: apt-get update && apt-get install -y python3 && npm run build && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp && chmod +x yt-dlp && node dist/index.js 
