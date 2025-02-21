@@ -10,7 +10,7 @@ dotenv.config();
 
 // Add this after your imports and before app initialization
 const ytDlpPath = process.env.NODE_ENV === 'production' 
-  ? path.join(__dirname, '../yt-dlp')  // Use absolute path
+  ? path.join(process.cwd(), 'yt-dlp')  // Use working directory
   : '/opt/homebrew/bin/yt-dlp';
 
 const app = express();
@@ -167,15 +167,12 @@ const downloadHandler = async (
     });
 
     const ytDlp = spawn(ytDlpPath, [
+      '--no-check-certificates',  // Add this to avoid SSL issues
+      '--no-cache-dir',          // Don't try to use cache
       videoUrl,
       '-o', outputPath,
-      '-f', 'bestvideo+bestaudio/best',
-      '--merge-output-format', 'mp4',
-      '--newline',
-      '--no-warnings',
-      '--no-colors',
-      '--progress',
-      '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
+      '-f', 'best',              // Simplify format selection
+      '--merge-output-format', 'mp4'
     ]);
 
     let lastProgress = 0;
@@ -217,7 +214,14 @@ const downloadHandler = async (
         }
       });
 
-      ytDlp.on('error', reject);
+      ytDlp.on('error', (error) => {
+        console.error('Spawn error:', error);
+        console.error('Command details:', {
+          command: ytDlpPath,
+          exists: fs.existsSync(ytDlpPath),
+          stats: fs.existsSync(ytDlpPath) ? fs.statSync(ytDlpPath) : null
+        });
+      });
     });
 
   } catch (error) {
