@@ -48,4 +48,6 @@ Thumbs.db
 
 # Railway
 .railway
-cd server && npm install && npm run start.example
+
+# Allow example files
+!*.example
