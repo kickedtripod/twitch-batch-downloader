@@ -10,11 +10,26 @@ dotenv.config();
 
 // Add this after your imports and before app initialization
 const ytDlpPath = process.env.NODE_ENV === 'production' 
-  ? './yt-dlp'  // Use local yt-dlp in production (downloaded by Procfile)
+  ? '/usr/local/bin/python3 ./yt-dlp'  // Explicitly use Python path
   : '/opt/homebrew/bin/yt-dlp'; // Local path for development
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+// Move these to the top, right after imports and before any other code
+let server: ReturnType<typeof app.listen>;
+
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM signal. Performing graceful shutdown...');
+  if (server) {
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+});
 
 // CORS configuration
 app.use(cors({
@@ -142,17 +157,30 @@ const downloadHandler = async (
     const videoUrl = `https://www.twitch.tv/videos/${videoId}`;
     const outputPath = path.join(downloadsDir, `${videoId}.mp4`);
 
-    const ytDlp = spawn(ytDlpPath, [
-      videoUrl,
-      '-o', outputPath,
-      '-f', 'bestvideo+bestaudio/best',
-      '--merge-output-format', 'mp4',
-      '--newline',
-      '--no-warnings',
-      '--no-colors',
-      '--progress',
-      '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
-    ]);
+    const ytDlp = process.env.NODE_ENV === 'production'
+      ? spawn('/usr/local/bin/python3', [
+          './yt-dlp',
+          videoUrl,
+          '-o', outputPath,
+          '-f', 'bestvideo+bestaudio/best',
+          '--merge-output-format', 'mp4',
+          '--newline',
+          '--no-warnings',
+          '--no-colors',
+          '--progress',
+          '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
+        ])
+      : spawn(ytDlpPath, [
+          videoUrl,
+          '-o', outputPath,
+          '-f', 'bestvideo+bestaudio/best',
+          '--merge-output-format', 'mp4',
+          '--newline',
+          '--no-warnings',
+          '--no-colors',
+          '--progress',
+          '--progress-template', '[download] %(progress._percent_str)s %(progress._downloaded_bytes_str)s at %(progress._speed_str)s ETA %(progress._eta_str)s'
+        ]);
 
     let lastProgress = 0;
 
@@ -359,22 +387,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// Remove the duplicate SIGTERM handlers and replace with this near the top after imports
-let server: ReturnType<typeof app.listen>;
-
-process.on('SIGTERM', () => {
-  console.log('Received SIGTERM signal. Performing graceful shutdown...');
-  if (server) {
-    server.close(() => {
-      console.log('Server closed');
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
-});
-
-// Near the bottom, replace both the server.listen and the duplicate SIGTERM handler with:
+// Move the server initialization to the very end of the file
 server = app.listen(Number(port), '0.0.0.0', () => {
   console.log('Starting server with config:', {
     port: port,
