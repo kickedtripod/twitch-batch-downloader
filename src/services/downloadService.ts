@@ -35,31 +35,42 @@ export class DownloadService {
     isBatchDownload: boolean = false
   ): Promise<void> {
     try {
-      // Remove .mp4 extension if it exists - server will add it back
-      const baseFilename = filename.replace(/\.mp4$/i, '');
-      
-      console.log('Starting download for video:', video.id);
-      
+      console.log('Starting download with config:', {
+        API_BASE_URL: config.API_BASE_URL,
+        videoId: video.id,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      const response = await fetch(`${config.API_BASE_URL}/api/videos/${video.id}/download`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        credentials: 'include'
+      });
+
+      console.log('Download response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (!response.ok || !response.body) {
+        const errorText = await response.text();
+        console.error('Download error response:', errorText);
+        throw new Error(`Failed to start download: ${response.status} ${response.statusText}`);
+      }
+
       // Initialize progress
       onProgress?.({
         videoId: video.id,
         progress: 0,
         status: 'downloading'
       });
-
-      const response = await fetch(`${config.API_BASE_URL}/api/videos/${video.id}/download`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'x-batch-download': isBatchDownload.toString(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ filename: baseFilename })
-      });
-
-      if (!response.ok || !response.body) {
-        throw new Error('Failed to start download');
-      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
