@@ -100,11 +100,23 @@ const downloadHandler = async (
 ): Promise<void> => {
   try {
     const { videoId } = req.params;
-    const { authorization, 'x-batch-download': isBatchDownload } = req.headers;
+    const { authorization } = req.headers;
     const { filename } = req.body;
+
+    console.log('Download request:', {
+      videoId,
+      hasAuth: !!authorization,
+      filename,
+      body: req.body
+    });
 
     if (!authorization) {
       res.status(401).json({ error: 'No authorization token provided' });
+      return;
+    }
+
+    if (!filename) {
+      res.status(400).json({ error: 'No filename provided' });
       return;
     }
 
@@ -160,7 +172,6 @@ const downloadHandler = async (
               type: 'complete',
               percent: 100,
               downloadUrl: `/api/videos/${videoId}/file`,
-              batchDownload: isBatchDownload === 'true',
               filename: filename
             })}\n\n`);
             res.end();
@@ -177,6 +188,7 @@ const downloadHandler = async (
     });
 
   } catch (error) {
+    console.error('Download handler error:', error);
     next(error);
   }
 };
@@ -286,6 +298,16 @@ router.get('/api/videos/:videoId/file', fileHandler);
 
 // Use the router
 app.use(router);
+
+// Add a global error handler
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Global error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
