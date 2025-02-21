@@ -14,10 +14,10 @@ const port = process.env.PORT || 3001;
 
 // CORS configuration
 app.use(cors({
-  origin: true, // Allow all origins temporarily for debugging
+  origin: 'https://twitch-batch-downloader.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-batch-download']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
