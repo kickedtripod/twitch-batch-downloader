@@ -8,6 +8,11 @@ import archiver from 'archiver';
 
 dotenv.config();
 
+// Add this after your imports and before app initialization
+const ytDlpPath = process.env.NODE_ENV === 'production' 
+  ? './yt-dlp'  // Use local yt-dlp in production (downloaded by Procfile)
+  : '/opt/homebrew/bin/yt-dlp'; // Local path for development
+
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -95,11 +100,6 @@ interface DownloadResponse {
   speed?: string;
   eta?: string;
 }
-
-// Add this check for yt-dlp path
-const ytDlpPath = process.env.NODE_ENV === 'production' 
-  ? 'yt-dlp'  // Use globally installed yt-dlp in production
-  : '/opt/homebrew/bin/yt-dlp'; // Local path for development
 
 // Update the handler definitions
 const downloadHandler = async (
