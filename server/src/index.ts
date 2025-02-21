@@ -11,48 +11,14 @@ dotenv.config();
 const app = express();
 const router = Router();
 const port = process.env.PORT || 3001;
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-  'http://localhost:5173',
-  'https://twitch-batch-downloader.vercel.app'  // Remove trailing slash
-];
 
-// Create the middleware function with correct typing
-const corsMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-};
-
-// Apply the middleware
-app.use(corsMiddleware);
-
-// Simplified CORS setup
+// Simpler CORS configuration
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'https://twitch-batch-downloader.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Handle OPTIONS preflight
-app.options('*', (req, res) => {
-  res.status(200).end();
-});
 
 app.use(express.json());
 
