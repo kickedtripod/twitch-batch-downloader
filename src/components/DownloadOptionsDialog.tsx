@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TwitchVideo } from '../services/twitchApi';
 
 interface DownloadOption {

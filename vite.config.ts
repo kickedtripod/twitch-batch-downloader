@@ -6,5 +6,9 @@ export default defineConfig({
   server: {
     port: 3007,
     host: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
 }) 

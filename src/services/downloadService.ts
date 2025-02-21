@@ -11,7 +11,7 @@ export interface DownloadProgress {
   size?: string;
 }
 
-interface ProgressData {
+export interface ProgressData {
   type: string;
   percent: number;
   speed?: string;

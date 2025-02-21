@@ -1,11 +1,11 @@
-import React from 'react';
+import { FC } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
 import HomePage from './pages/HomePage';
 import AuthCallback from './pages/AuthCallback';
 
-function App() {
+const App: FC = () => {
   return (
     <AuthProvider>
       <VideoProvider>

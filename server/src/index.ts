@@ -79,6 +79,11 @@ interface DownloadResponse {
   eta?: string;
 }
 
+// Add this check for yt-dlp path
+const ytDlpPath = process.env.NODE_ENV === 'production' 
+  ? 'yt-dlp'  // Use globally installed yt-dlp in production
+  : '/opt/homebrew/bin/yt-dlp'; // Local path for development
+
 // Update the handler definitions
 const downloadHandler = async (
   req: Request<RouteParams>,
@@ -108,7 +113,7 @@ const downloadHandler = async (
     const videoUrl = `https://www.twitch.tv/videos/${videoId}`;
     const outputPath = path.join(downloadsDir, `${videoId}.mp4`);
 
-    const ytDlp = spawn('/opt/homebrew/bin/yt-dlp', [
+    const ytDlp = spawn(ytDlpPath, [
       videoUrl,
       '-o', outputPath,
       '-f', 'bestvideo+bestaudio/best',
