@@ -431,9 +431,12 @@ const fileHandler = (
   try {
     let downloadName = `${videoId}.mp4`;
     if (fs.existsSync(filenameMapPath)) {
+      console.log('Reading filename from:', filenameMapPath);
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
+      console.log('Original filename:', filename);
       // Sanitize the filename
       filename = sanitizeFilename(filename);
+      console.log('Sanitized filename:', filename);
       
       const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
       if (includeDate) {
@@ -448,6 +451,7 @@ const fileHandler = (
     if (!downloadName.toLowerCase().endsWith('.mp4')) {
       downloadName += '.mp4';
     }
+    console.log('Final download name:', downloadName);
 
     console.log('File handler request:', {
       videoId,
