@@ -37,7 +37,7 @@ const FILENAME_OPTIONS: DownloadOption[] = [
 ];
 
 export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCount, selectedVideos, videos }: Props) {
-  console.log('Dialog props:', { isOpen, selectedCount, selectedVideos });
+  console.log('DownloadOptionsDialog rendered with props:', { isOpen, selectedCount });
 
   const [components, setComponents] = useState<FilenameComponents>({
     date: false,
@@ -90,15 +90,13 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
     }));
   };
 
-  if (!isOpen) {
-    console.log('Dialog is not open, returning null');
-    return null;
-  }
-
   return (
     <Dialog 
       open={isOpen} 
-      onClose={onClose}
+      onClose={() => {
+        console.log('Dialog onClose triggered');
+        onClose();
+      }}
       maxWidth="sm"
       fullWidth
     >

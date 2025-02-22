@@ -13,8 +13,10 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadClick = () => {
-    console.log('Opening download dialog');
+    console.log('Download button clicked');
+    console.log('Current dialog state:', showDialog);
     setShowDialog(true);
+    console.log('New dialog state:', true);
   };
 
   const handleDialogClose = () => {
