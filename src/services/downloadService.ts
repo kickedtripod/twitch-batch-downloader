@@ -193,7 +193,6 @@ export class DownloadService {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading videos:', error);
       throw error;
@@ -202,31 +201,63 @@ export class DownloadService {
 
   async downloadVideoByVideoId(videoId: string, title: string, options: FilenameOptions): Promise<void> {
     try {
-      const response = await fetch(`${config.API_BASE_URL}/api/videos/${videoId}/file`, {
-        method: 'GET',
+      console.log('Downloading video with options:', { videoId, title, options });
+      const response = await fetch(`${config.API_BASE_URL}/api/videos/${videoId}/download`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`
-        }
+        },
+        body: JSON.stringify({
+          filename: title,
+          includeDate: options.includeDate,
+          includeType: options.includeType
+        })
+      });
+
+      console.log('Download response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Download error:', errorText);
         throw new Error('Failed to download video');
       }
 
-      // Get the filename from the Content-Disposition header
-      const contentDisposition = response.headers.get('Content-Disposition');
-      const filename = contentDisposition ? contentDisposition.split('filename=')[1] : title;
+      // Wait for the download to complete and get the file URL
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-      // Trigger the file download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      while (true) {
+        const { done, value } = await reader!.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6));
+            if (data.type === 'complete') {
+              // Trigger the actual file download
+              const fileResponse = await fetch(`${config.API_BASE_URL}${data.downloadUrl}`);
+              const blob = await fileResponse.blob();
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = data.filename || title;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              window.URL.revokeObjectURL(url);
+              return;
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error('Error downloading video:', error);
       throw error;

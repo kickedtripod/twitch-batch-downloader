@@ -18,8 +18,8 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
 
   const handleDownload = async (template: string) => {
     setIsDialogOpen(false);
-    const includeDate = template.includes('{date}');
-    const includeType = template.includes('{type}');
+    const includeDate = template.includes('({date})');
+    const includeType = template.includes('[{type}]');
     await downloadVideo(video.id, video.title, { includeDate, includeType });
   };
 
