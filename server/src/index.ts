@@ -417,7 +417,15 @@ const fileHandler = (
   try {
     let downloadName = `${videoId}.mp4`;
     if (fs.existsSync(filenameMapPath)) {
-      downloadName = `${fs.readFileSync(filenameMapPath, 'utf8').trim()}.mp4`;
+      let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
+      const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
+      if (includeDate) {
+        filename += `-${new Date().toISOString().slice(0, 10)}`;
+      }
+      if (includeType) {
+        filename += '-Archive';
+      }
+      downloadName = `${filename}.mp4`;
     }
 
     console.log('File handler request:', {
