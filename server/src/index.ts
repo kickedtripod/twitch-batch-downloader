@@ -443,26 +443,15 @@ const fileHandler = (
         filename += '-Archive';
       }
       downloadName = filename;
-      if (!downloadName.toLowerCase().endsWith('.mp4')) {
-        downloadName = downloadName.replace(/\.[^/.]+$/, '') + '.mp4';
-      }
     }
-
-    // Encode the filename for Content-Disposition header
-    const encodedFilename = encodeURIComponent(downloadName)
-      .replace(/['()]/g, escape) // Additional encoding for parentheses
-      .replace(/\*/g, '%2A');
-
-    // Set the correct MIME type for MP4 files
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFilename}`);
+    // Always ensure the file ends with .mp4
+    downloadName = downloadName.replace(/\.[^/.]+$/, '') + '.mp4';
 
     console.log('File handler request:', {
       videoId,
       batch,
       outputPath,
       downloadName,
-      encodedFilename,
       exists: fs.existsSync(outputPath)
     });
 
@@ -474,23 +463,19 @@ const fileHandler = (
 
     // For batch downloads, just send the file without deleting
     if (batch === 'true') {
-      fs.createReadStream(outputPath).pipe(res);
+      res.download(outputPath, downloadName);
       return;
     }
 
     // For single downloads, delete after successful download
-    const stream = fs.createReadStream(outputPath);
-    stream.pipe(res);
-    
-    stream.on('end', () => {
+    res.download(outputPath, downloadName, (err) => {
+      if (err) {
+        console.error('Error sending file:', err);
+        return;
+      }
       fs.unlink(outputPath, (unlinkErr) => {
         if (unlinkErr) console.error('Error deleting file:', unlinkErr);
       });
-    });
-    
-    stream.on('error', (err) => {
-      console.error('Error sending file:', err);
-      res.status(500).end();
     });
   } catch (error) {
     console.error('Error in file handler:', error);
