@@ -429,8 +429,9 @@ const fileHandler = (
       if (includeType) {
         filename += '-Archive';
       }
-      downloadName = `${filename}.mp4`;
+      downloadName = `${filename}`;
     }
+    downloadName += '.mp4';
 
     console.log('File handler request:', {
       videoId,
