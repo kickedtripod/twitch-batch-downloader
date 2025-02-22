@@ -448,15 +448,21 @@ const fileHandler = (
       }
     }
 
+    // Encode the filename for Content-Disposition header
+    const encodedFilename = encodeURIComponent(downloadName)
+      .replace(/['()]/g, escape) // Additional encoding for parentheses
+      .replace(/\*/g, '%2A');
+
     // Set the correct MIME type for MP4 files
     res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFilename}`);
 
     console.log('File handler request:', {
       videoId,
       batch,
       outputPath,
       downloadName,
+      encodedFilename,
       exists: fs.existsSync(outputPath)
     });
 
