@@ -218,12 +218,14 @@ const downloadHandler = async (
     console.log('yt-dlp stats:', fs.existsSync(config.ytDlpPath) ? fs.statSync(config.ytDlpPath) : null);
 
     const ytDlp = spawn(config.ytDlpPath, [
-      '--no-check-certificates',  // Add this to avoid SSL issues
-      '--no-cache-dir',          // Don't try to use cache
+      '--no-check-certificates',
+      '--no-cache-dir',
       videoUrl,
       '-o', outputPath,
-      '-f', 'best',              // Simplify format selection
-      '--merge-output-format', 'mp4'
+      '-f', 'bestvideo+bestaudio/best',
+      '--merge-output-format', 'mp4',
+      '--retries', '3',
+      '--limit-rate', '5M'
     ]);
 
     let lastProgress = 0;
@@ -324,74 +326,55 @@ const zipHandler = async (req: Request<{}, any, any, { files?: string | string[]
     
     console.log('2. Decoded file list:', fileList);
 
-    const zipPath = path.join(config.downloadsDir, 'videos.zip');
-    console.log('3. Zip path:', zipPath);
-    
-    // Create list of full file paths and their formatted names
-    const filePaths = fileList.map(videoId => {
+    // Wait for all downloads to complete and verify files
+    const fileVerifications = await Promise.all(fileList.map(async (videoId) => {
       const videoPath = path.join(config.downloadsDir, `${videoId}.mp4`);
       const filenameMapPath = path.join(config.downloadsDir, `${videoId}.filename`);
       
-      const fileExists = fs.existsSync(videoPath);
-      const mapExists = fs.existsSync(filenameMapPath);
-      
-      console.log('4. File check:', {
-        videoId,
-        videoPath,
-        filenameMapPath,
-        fileExists,
-        mapExists,
-        dirContents: fs.readdirSync(config.downloadsDir)
-      });
+      // Check if file exists and has size
+      if (!fs.existsSync(videoPath)) {
+        throw new Error(`Video file not found: ${videoId}`);
+      }
+
+      const stats = fs.statSync(videoPath);
+      if (stats.size === 0) {
+        throw new Error(`Video file is empty: ${videoId}`);
+      }
 
       let formattedName;
       try {
-        formattedName = fs.readFileSync(filenameMapPath, 'utf8').trim();
+        formattedName = fs.readFileSync(filenameMapPath, 'utf8').split('\n')[0].trim();
         if (!formattedName.toLowerCase().endsWith('.mp4')) {
           formattedName += '.mp4';
         }
       } catch (error) {
-        console.error('5. Error reading filename map:', error);
+        console.error('Error reading filename map:', error);
         formattedName = `${videoId}.mp4`;
       }
-      
+
       return {
         path: videoPath,
-        name: formattedName
+        name: formattedName,
+        size: stats.size
       };
-    });
+    }));
 
-    console.log('6. File paths prepared:', filePaths);
+    console.log('Verified files:', fileVerifications);
 
-    // Check if all files exist
-    const missingFiles = filePaths.filter(file => !fs.existsSync(file.path));
-    if (missingFiles.length > 0) {
-      console.error('7. Missing files:', missingFiles);
-      res.status(404).json({ 
-        error: 'Some files are missing',
-        missing: missingFiles.map(f => f.name),
-        downloadsDir: config.downloadsDir,
-        dirContents: fs.readdirSync(config.downloadsDir)
-      });
-      return;
+    const zipPath = path.join(config.downloadsDir, 'videos.zip');
+    await createZipFile(fileVerifications, zipPath);
+
+    // Verify zip file was created and has size
+    const zipStats = fs.statSync(zipPath);
+    if (zipStats.size === 0) {
+      throw new Error('Created zip file is empty');
     }
 
-    console.log('Pre-zip file check:', {
-      files: filePaths.map(file => ({
-        path: file.path,
-        name: file.name,
-        exists: fs.existsSync(file.path),
-        size: fs.existsSync(file.path) ? fs.statSync(file.path).size : 0
-      })),
-      downloadsDir: {
-        path: config.downloadsDir,
-        contents: fs.readdirSync(config.downloadsDir)
-      }
+    console.log('Zip file created successfully:', {
+      path: zipPath,
+      size: zipStats.size,
+      files: fileVerifications.map(f => ({ name: f.name, size: f.size }))
     });
-
-    console.log('8. Creating zip file...');
-    await createZipFile(filePaths, zipPath);
-    console.log('9. Zip file created');
 
     // Send the zip file
     res.download(zipPath, 'twitch-videos.zip', (err) => {
@@ -400,15 +383,15 @@ const zipHandler = async (req: Request<{}, any, any, { files?: string | string[]
         return;
       }
       
-      // Clean up only after successful download
+      // Clean up after successful download
       setTimeout(() => {
         fs.unlink(zipPath, () => {
-          filePaths.forEach(file => {
+          fileVerifications.forEach(file => {
             fs.unlink(file.path, () => {});
             fs.unlink(file.path.replace('.mp4', '.filename'), () => {});
           });
         });
-      }, 1000); // Give a small delay to ensure download is complete
+      }, 5000); // Increased delay to ensure download completes
     });
   } catch (error) {
     console.error('Error in zip handler:', error);
