@@ -102,8 +102,8 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
           borderRadius: 2,
           boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
           color: 'white',
-          minWidth: '400px',
-          maxWidth: '90vw'
+          width: '400px',
+          margin: 2
         }
       }}
     >
@@ -142,8 +142,9 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
                   sx={{
                     color: 'rgba(255, 255, 255, 0.5)',
                     '&.Mui-checked': {
-                      color: 'rgba(179, 167, 213, 0.95)'  // Slate Lavender
-                    }
+                      color: 'rgba(179, 167, 213, 0.95)'
+                    },
+                    padding: '9px'
                   }}
                 />
               }
@@ -151,7 +152,8 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
                 <div>
                   <p style={{ 
                     fontFamily: '"Urbanist", sans-serif',
-                    color: 'white'
+                    color: 'white',
+                    marginBottom: '2px'
                   }}>
                     {option.label}
                   </p>
@@ -164,7 +166,15 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
                   </p>
                 </div>
               }
-              sx={{ mb: 2, display: 'block' }}
+              sx={{ 
+                mb: 2, 
+                display: 'flex',
+                alignItems: 'flex-start',
+                marginLeft: 0,
+                '& .MuiCheckbox-root': {
+                  marginRight: '12px'
+                }
+              }}
             />
           ))}
 
