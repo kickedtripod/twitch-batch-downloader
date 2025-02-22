@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { Video } from '../types';
 import { DownloadService } from '../services/downloadService';
 import { DownloadOptionsDialog } from './DownloadOptionsDialog';
@@ -12,24 +12,9 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownloadClick = () => {
-    console.log('Download button clicked');
-    console.log('Current dialog state:', showDialog);
-    setShowDialog(true);
-    console.log('New dialog state:', true);
-  };
-
-  const handleDialogClose = () => {
-    console.log('Closing dialog');
-    setShowDialog(false);
-  };
-
-  const handleDownload = async (template: string) => {
+  const handleDirectDownload = async () => {
     try {
-      console.log('Starting download with template:', template);
-      setShowDialog(false);
       setIsDownloading(true);
-
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         throw new Error('No access token found');
@@ -54,29 +39,49 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         duration: ''
       };
 
-      await downloadService.downloadVideo(twitchVideo, template);
+      await downloadService.downloadVideo(twitchVideo, '{title}');
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error('Direct download failed:', error);
     } finally {
       setIsDownloading(false);
     }
   };
 
+  const handleShowDialog = () => {
+    console.log('Show dialog clicked');
+    alert('Opening dialog...'); // Add this to verify the click handler works
+    setShowDialog(true);
+  };
+
   return (
     <div className="relative">
-      <Button 
-        variant="contained"
-        color="primary"
-        onClick={handleDownloadClick}
-        disabled={isDownloading}
-      >
-        {isDownloading ? 'Downloading...' : 'Download'}
-      </Button>
+      <Stack direction="row" spacing={2}>
+        <Button 
+          variant="contained"
+          color="primary"
+          onClick={handleDirectDownload}
+          disabled={isDownloading}
+        >
+          Direct Download
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleShowDialog}
+        >
+          Show Options
+        </Button>
+      </Stack>
 
       <DownloadOptionsDialog
         isOpen={showDialog}
-        onClose={handleDialogClose}
-        onDownload={handleDownload}
+        onClose={() => {
+          console.log('Dialog closing');
+          alert('Dialog closing'); // Add this to verify the close handler works
+          setShowDialog(false);
+        }}
+        onDownload={handleDirectDownload}
         selectedCount={1}
         selectedVideos={new Set([video.id])}
         videos={[{
