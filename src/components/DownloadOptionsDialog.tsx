@@ -36,6 +36,8 @@ const FILENAME_OPTIONS: DownloadOption[] = [
 ];
 
 export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCount, selectedVideos, videos }: Props) {
+  console.log('Dialog props:', { isOpen, selectedCount, selectedVideos });
+
   const [components, setComponents] = useState<FilenameComponents>({
     date: false,
     type: false
