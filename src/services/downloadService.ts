@@ -28,18 +28,28 @@ export class DownloadService {
   constructor(private accessToken: string) {}
 
   private sanitizeFilename(filename: string): string {
-    // Only do basic sanitization on the client side
-    // Server will handle the full sanitization
     return filename.trim();
   }
 
   async downloadVideo(
     video: TwitchVideo, 
-    filename: string,
+    template: string,  // Changed to accept template instead of filename
     onProgress?: (progress: DownloadProgress) => void,
     isBatchDownload: boolean = false
   ): Promise<void> {
     try {
+      // Generate filename from template
+      let filename = template.replace('{title}', video.title);
+      if (template.includes('({date})')) {
+        const date = new Date(video.created_at).toISOString().split('T')[0];
+        filename = filename.replace('({date})', `(${date})`);
+      }
+      if (template.includes('[{type}]')) {
+        const type = video.type.charAt(0).toUpperCase() + video.type.slice(1);
+        filename = filename.replace('[{type}]', `[${type}]`);
+      }
+      filename += '.mp4';
+
       console.log('Starting download with config:', {
         apiUrl: config.API_BASE_URL,
         videoId: video.id,
@@ -52,7 +62,9 @@ export class DownloadService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`
         },
-        body: JSON.stringify({ filename: this.sanitizeFilename(filename) })
+        body: JSON.stringify({ 
+          filename: this.sanitizeFilename(filename)
+        })
       });
 
       console.log('Download response:', {
