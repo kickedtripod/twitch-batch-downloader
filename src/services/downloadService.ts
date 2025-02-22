@@ -215,24 +215,17 @@ export class DownloadService {
         })
       });
 
-      console.log('Download response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
         const errorText = await response.text();
         console.error('Download error:', errorText);
         throw new Error('Failed to download video');
       }
 
-      // Wait for the download to complete and get the file URL
-      const reader = response.body?.getReader();
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
       while (true) {
-        const { done, value } = await reader!.read();
+        const { done, value } = await reader.read();
         if (done) break;
 
         const chunk = decoder.decode(value);
@@ -244,14 +237,18 @@ export class DownloadService {
             if (data.type === 'complete') {
               // Trigger the actual file download
               const fileResponse = await fetch(`${config.API_BASE_URL}${data.downloadUrl}`);
+              if (!fileResponse.ok) {
+                throw new Error('Failed to download file');
+              }
+
               const blob = await fileResponse.blob();
               const url = window.URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = data.filename || title;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = this.sanitizeFilename(title);
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
               window.URL.revokeObjectURL(url);
               return;
             }
@@ -259,7 +256,7 @@ export class DownloadService {
         }
       }
     } catch (error) {
-      console.error('Error downloading video:', error);
+      console.error('Download error:', error);
       throw error;
     }
   }

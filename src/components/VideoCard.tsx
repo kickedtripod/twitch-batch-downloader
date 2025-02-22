@@ -17,10 +17,15 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   };
 
   const handleDownload = async (template: string) => {
-    setIsDialogOpen(false);
-    const includeDate = template.includes('({date})');
-    const includeType = template.includes('[{type}]');
-    await downloadVideo(video.id, video.title, { includeDate, includeType });
+    try {
+      setIsDialogOpen(false);
+      const includeDate = template.includes('({date})');
+      const includeType = template.includes('[{type}]');
+      await downloadVideo(video.id, video.title, { includeDate, includeType });
+    } catch (error) {
+      console.error('Download failed:', error);
+      // You might want to add error handling UI here
+    }
   };
 
   const handleDialogClose = () => {
