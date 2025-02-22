@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Box, Select, MenuItem, Button, FormControl, Typography, Divider } from '@mui/material';
 import VideoList from '../components/VideoList';
 import { useVideo } from '../contexts/VideoContext';
@@ -7,6 +7,7 @@ import LoginButton from '../components/LoginButton';
 import { SelectChangeEvent } from '@mui/material';
 import { VideoType } from '../services/twitchApi';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { DownloadOptionsDialog } from '../components/DownloadOptionsDialog';
 
 const HomePage: FC = () => {
   const { isAuthenticated, logout } = useAuth();
@@ -20,6 +21,12 @@ const HomePage: FC = () => {
     clearSelection,
     downloadSelectedVideos 
   } = useVideo();
+  const [showDialog, setShowDialog] = useState(false);
+
+  const handleDownload = (template: string) => {
+    setShowDialog(false);
+    downloadSelectedVideos(template);
+  };
 
   if (!isAuthenticated) {
     return <LoginButton />;
@@ -96,10 +103,7 @@ const HomePage: FC = () => {
 
             <Button
               variant="contained"
-              onClick={(e) => {
-                e.preventDefault();
-                downloadSelectedVideos('{title}-{date}-{type}');
-              }}
+              onClick={() => setShowDialog(true)}
               disabled={selectedVideos.size === 0}
               sx={{
                 backgroundColor: selectedVideos.size > 0 
@@ -152,6 +156,15 @@ const HomePage: FC = () => {
           Switch Twitch Account
         </Button>
       </Box>
+
+      <DownloadOptionsDialog
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
+        onDownload={handleDownload}
+        selectedCount={selectedVideos.size}
+        selectedVideos={selectedVideos}
+        videos={videos.filter(v => selectedVideos.has(v.id))}
+      />
 
       <VideoList />
     </Box>
