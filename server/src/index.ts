@@ -431,7 +431,6 @@ const fileHandler = (
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
       // Clean up any remaining special characters
       filename = filename
-        .replace(/\s*\(\d+\)(?=\s*-?\s*2025)/, '')
         .replace(/[/\\?%*:|"<>]/g, '_')
         .trim();
       
@@ -444,6 +443,10 @@ const fileHandler = (
       }
       downloadName = filename;
     }
+
+    // Remove any numbered suffixes from the entire filename
+    downloadName = downloadName.replace(/\s*\(\d+\)(?=[^/]*$)/, '');
+    
     // Always ensure the file ends with .mp4
     downloadName = downloadName.replace(/\.[^/.]+$/, '') + '.mp4';
 
