@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TwitchVideo } from '../services/twitchApi';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Checkbox, FormControlLabel } from '@mui/material';
 import config from '../config/config';
 
 interface DownloadOption {
@@ -95,35 +96,36 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
   }
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+    <Dialog 
+      open={isOpen} 
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
     >
-      <div className="bg-white rounded-lg p-6 max-w-md w-full m-4" onClick={e => e.stopPropagation()}>
-        <h2 className="text-xl font-bold mb-4">Download Options</h2>
+      <DialogTitle>Download Options</DialogTitle>
+      <DialogContent>
         <p className="text-gray-600 mb-4">
           Downloading {selectedCount} video{selectedCount !== 1 ? 's' : ''}
         </p>
         
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4">
           <p className="font-medium">Filename Components:</p>
           {FILENAME_OPTIONS.map(option => (
-            <label key={option.id} className="flex items-start space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={components[option.id]}
-                onChange={() => toggleComponent(option.id)}
-                className="mt-1"
-              />
-              <div>
-                <p>{option.label}</p>
-                <p className="text-sm text-gray-500">{option.description}</p>
-              </div>
-            </label>
+            <FormControlLabel
+              key={option.id}
+              control={
+                <Checkbox
+                  checked={components[option.id]}
+                  onChange={() => toggleComponent(option.id)}
+                />
+              }
+              label={
+                <div>
+                  <p>{option.label}</p>
+                  <p className="text-sm text-gray-500">{option.description}</p>
+                </div>
+              }
+            />
           ))}
 
           {exampleVideo && (
@@ -135,22 +137,15 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
             </div>
           )}
         </div>
-
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleDownload}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Download
-          </button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="inherit">
+          Cancel
+        </Button>
+        <Button onClick={handleDownload} variant="contained" color="primary">
+          Download
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 } 
