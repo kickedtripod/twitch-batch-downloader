@@ -202,23 +202,31 @@ export class DownloadService {
 
   async downloadVideoByVideoId(videoId: string, title: string, options: FilenameOptions): Promise<void> {
     try {
-      const response = await fetch(`${config.API_BASE_URL}/api/videos/${videoId}/download`, {
-        method: 'POST',
+      const response = await fetch(`${config.API_BASE_URL}/api/videos/${videoId}/file`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`
-        },
-        body: JSON.stringify({
-          filename: title,
-          ...options,
-        })
+        }
       });
 
       if (!response.ok) {
         throw new Error('Failed to download video');
       }
 
-      // Handle the response as needed
+      // Get the filename from the Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filename = contentDisposition ? contentDisposition.split('filename=')[1] : title;
+
+      // Trigger the file download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading video:', error);
       throw error;
