@@ -175,6 +175,10 @@ const downloadHandler = async (
 
     // Sanitize the filename before storing
     let sanitizedFilename = filename.replace(/[/\\?%*:|"<>]/g, '_').replace(/\.mp4$/, '');
+    const options = {
+      includeDate,
+      includeType
+    };
     if (includeDate) {
       sanitizedFilename += `-${new Date().toISOString().slice(0, 10)}`;
     }
@@ -182,7 +186,7 @@ const downloadHandler = async (
       sanitizedFilename += '-Archive';
     }
     const filenameMapPath = path.join(config.downloadsDir, `${videoId}.filename`);
-    fs.writeFileSync(filenameMapPath, `${sanitizedFilename}\n`);
+    fs.writeFileSync(filenameMapPath, `${sanitizedFilename}\n${JSON.stringify(options)}\n`);
 
     // Set headers for SSE
     res.setHeader('Content-Type', 'text/event-stream');
