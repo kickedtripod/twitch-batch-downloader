@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@mui/material';
 import { Video } from '../types';
-import { downloadVideo } from '../services/downloadService';
+import { DownloadService } from '../services/downloadService';
 import { DownloadOptionsDialog } from './DownloadOptionsDialog';
 import { TwitchVideo } from '../services/twitchApi';
 
@@ -12,19 +12,25 @@ interface VideoCardProps {
 const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDownloadClick = () => {
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDialogOpen(true);
   };
 
   const handleDownload = async (template: string) => {
     try {
       setIsDialogOpen(false);
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw new Error('No access token found');
+      }
+
+      const downloadService = new DownloadService(accessToken);
       const includeDate = template.includes('({date})');
       const includeType = template.includes('[{type}]');
-      await downloadVideo(video.id, video.title, { includeDate, includeType });
+      await downloadService.downloadVideoByVideoId(video.id, video.title, { includeDate, includeType });
     } catch (error) {
       console.error('Download failed:', error);
-      // TODO: Add error notification here
     }
   };
 
@@ -54,7 +60,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
           title: video.title,
           created_at: new Date().toISOString(),
           type: 'archive',
-          // Add other required TwitchVideo properties
           user_id: '',
           user_login: '',
           user_name: '',
