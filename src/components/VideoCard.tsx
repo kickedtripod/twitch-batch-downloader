@@ -9,18 +9,23 @@ interface VideoCardProps {
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadClick = () => {
     console.log('Opening download dialog');
-    setIsDialogOpen(true);
+    setShowDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    console.log('Closing dialog');
+    setShowDialog(false);
   };
 
   const handleDownload = async (template: string) => {
     try {
       console.log('Starting download with template:', template);
-      setIsDialogOpen(false);
+      setShowDialog(false);
       setIsDownloading(true);
 
       const accessToken = localStorage.getItem('accessToken');
@@ -66,32 +71,30 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         {isDownloading ? 'Downloading...' : 'Download'}
       </Button>
 
-      {isDialogOpen && (
-        <DownloadOptionsDialog
-          isOpen={true}
-          onClose={() => setIsDialogOpen(false)}
-          onDownload={handleDownload}
-          selectedCount={1}
-          selectedVideos={new Set([video.id])}
-          videos={[{
-            id: video.id,
-            title: video.title,
-            created_at: new Date().toISOString(),
-            type: 'archive',
-            user_id: '',
-            user_login: '',
-            user_name: '',
-            description: '',
-            published_at: new Date().toISOString(),
-            url: '',
-            thumbnail_url: '',
-            viewable: '',
-            view_count: 0,
-            language: 'en',
-            duration: ''
-          }]}
-        />
-      )}
+      <DownloadOptionsDialog
+        isOpen={showDialog}
+        onClose={handleDialogClose}
+        onDownload={handleDownload}
+        selectedCount={1}
+        selectedVideos={new Set([video.id])}
+        videos={[{
+          id: video.id,
+          title: video.title,
+          created_at: new Date().toISOString(),
+          type: 'archive',
+          user_id: '',
+          user_login: '',
+          user_name: '',
+          description: '',
+          published_at: new Date().toISOString(),
+          url: '',
+          thumbnail_url: '',
+          viewable: '',
+          view_count: 0,
+          language: 'en',
+          duration: ''
+        }]}
+      />
     </div>
   );
 };

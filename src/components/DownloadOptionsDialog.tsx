@@ -89,9 +89,21 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
     }));
   };
 
+  if (!isOpen) {
+    console.log('Dialog is not open, returning null');
+    return null;
+  }
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full m-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="bg-white rounded-lg p-6 max-w-md w-full m-4" onClick={e => e.stopPropagation()}>
         <h2 className="text-xl font-bold mb-4">Download Options</h2>
         <p className="text-gray-600 mb-4">
           Downloading {selectedCount} video{selectedCount !== 1 ? 's' : ''}
