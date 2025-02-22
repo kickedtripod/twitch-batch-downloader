@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TwitchVideo } from '../services/twitchApi';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { Dialog, DialogContent, Checkbox, FormControlLabel } from '@mui/material';
 import config from '../config/config';
 
 interface DownloadOption {
@@ -93,21 +93,45 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
   return (
     <Dialog 
       open={isOpen} 
-      onClose={() => {
-        console.log('Dialog onClose triggered');
-        onClose();
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          backgroundColor: 'rgba(30, 30, 46, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 2,
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+          color: 'white',
+          minWidth: '400px',
+          maxWidth: '90vw'
+        }
       }}
-      maxWidth="sm"
-      fullWidth
     >
-      <DialogTitle>Download Options</DialogTitle>
-      <DialogContent>
-        <p className="text-gray-600 mb-4">
+      <DialogContent sx={{ p: 3 }}>
+        <h2 className="text-xl font-bold mb-4" style={{ 
+          fontFamily: '"Urbanist", sans-serif',
+          fontSize: '1.5rem',
+          marginBottom: '1rem'
+        }}>
+          Download Options
+        </h2>
+
+        <p style={{ 
+          color: 'rgba(255, 255, 255, 0.7)',
+          marginBottom: '1.5rem',
+          fontFamily: '"Urbanist", sans-serif'
+        }}>
           Downloading {selectedCount} video{selectedCount !== 1 ? 's' : ''}
         </p>
         
-        <div className="space-y-4">
-          <p className="font-medium">Filename Components:</p>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <p style={{ 
+            fontFamily: '"Urbanist", sans-serif',
+            marginBottom: '1rem',
+            color: 'rgba(255, 255, 255, 0.9)'
+          }}>
+            Filename Components:
+          </p>
           {FILENAME_OPTIONS.map(option => (
             <FormControlLabel
               key={option.id}
@@ -115,35 +139,113 @@ export function DownloadOptionsDialog({ isOpen, onClose, onDownload, selectedCou
                 <Checkbox
                   checked={components[option.id]}
                   onChange={() => toggleComponent(option.id)}
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    '&.Mui-checked': {
+                      color: 'rgba(179, 167, 213, 0.95)'  // Slate Lavender
+                    }
+                  }}
                 />
               }
               label={
                 <div>
-                  <p>{option.label}</p>
-                  <p className="text-sm text-gray-500">{option.description}</p>
+                  <p style={{ 
+                    fontFamily: '"Urbanist", sans-serif',
+                    color: 'white'
+                  }}>
+                    {option.label}
+                  </p>
+                  <p style={{ 
+                    fontSize: '0.875rem',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontFamily: '"Urbanist", sans-serif'
+                  }}>
+                    {option.description}
+                  </p>
                 </div>
               }
+              sx={{ mb: 2, display: 'block' }}
             />
           ))}
 
           {exampleVideo && (
-            <div className="mt-6 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-600">Example filename:</p>
-              <p className="text-sm font-mono break-all mt-1">
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginTop: '1.5rem'
+            }}>
+              <p style={{ 
+                fontSize: '0.875rem',
+                color: 'rgba(255, 255, 255, 0.7)',
+                marginBottom: '0.5rem',
+                fontFamily: '"Urbanist", sans-serif'
+              }}>
+                Example filename:
+              </p>
+              <p style={{ 
+                fontFamily: 'monospace',
+                wordBreak: 'break-all',
+                color: 'white'
+              }}>
                 {generateFilename(exampleVideo, components)}
               </p>
             </div>
           )}
         </div>
+
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: '0.75rem',
+          marginTop: '2rem'
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '0.5rem 1rem',
+              color: 'rgba(255, 255, 255, 0.7)',
+              background: 'none',
+              border: 'none',
+              borderRadius: '6px',
+              fontFamily: '"Urbanist", sans-serif',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+            onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            CANCEL
+          </button>
+          <button
+            onClick={() => {
+              const template = generateTemplate(components);
+              onDownload(template);
+            }}
+            style={{
+              padding: '0.5rem 1.5rem',
+              backgroundColor: 'rgba(179, 167, 213, 0.95)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: 600,
+              fontFamily: '"Urbanist", sans-serif',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(179, 167, 213, 1)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(179, 167, 213, 0.95)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            DOWNLOAD
+          </button>
+        </div>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">
-          Cancel
-        </Button>
-        <Button onClick={handleDownload} variant="contained" color="primary">
-          Download
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 } 
