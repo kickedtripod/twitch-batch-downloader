@@ -429,8 +429,10 @@ const fileHandler = (
     let downloadName = `${videoId}.mp4`;
     if (fs.existsSync(filenameMapPath)) {
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
-      // Clean up any remaining special characters
+      // Get just the base filename without any extensions or numbers
       filename = filename
+        .replace(/\.[^/.]+$/, '')  // Remove any file extension
+        .replace(/\s*\(\d+\)[^/]*$/, '')  // Remove (number) and anything after
         .replace(/[/\\?%*:|"<>]/g, '_')
         .trim();
       
@@ -444,11 +446,8 @@ const fileHandler = (
       downloadName = filename;
     }
 
-    // Remove any numbered suffixes from the entire filename
-    downloadName = downloadName.replace(/\s*\(\d+\)(?=[^/]*$)/, '');
-    
-    // Always ensure the file ends with .mp4
-    downloadName = downloadName.replace(/\.[^/.]+$/, '') + '.mp4';
+    // Add the .mp4 extension at the very end
+    downloadName = downloadName.replace(/\.mp4$/, '') + '.mp4';
 
     console.log('File handler request:', {
       videoId,
