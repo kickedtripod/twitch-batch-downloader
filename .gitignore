@@ -45,3 +45,5 @@ debug.log
 
 # Video files
 *.mp4
+node_modules/
+twitch-batch-downloader/node_modules/

@@ -429,7 +429,7 @@ const fileHandler = (
   const filenameMapPath = path.join(config.downloadsDir, `${videoId}.filename`);
 
   try {
-    let downloadName = `${videoId}.mp4`;
+    let baseFilename = `${videoId}`;
     if (fs.existsSync(filenameMapPath)) {
       console.log('Reading filename from:', filenameMapPath);
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
@@ -438,14 +438,17 @@ const fileHandler = (
       filename = sanitizeFilename(filename);
       console.log('Sanitized filename:', filename);
       
-      const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
-      if (includeDate) {
-        filename += `-${new Date().toISOString().slice(0, 10)}`;
-      }
-      if (includeType) {
-        filename += '-Archive';
-      }
-      downloadName = filename;
+      baseFilename = filename;
+    }
+
+    // Construct the final filename
+    let downloadName = baseFilename;
+    const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
+    if (includeDate) {
+      downloadName += `-${new Date().toISOString().slice(0, 10)}`;
+    }
+    if (includeType) {
+      downloadName += '-Archive';
     }
     // Always ensure the file ends with .mp4
     if (!downloadName.toLowerCase().endsWith('.mp4')) {
