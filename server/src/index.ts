@@ -100,10 +100,11 @@ app.use((req, res, next) => {
 // Add this function near the top of the file
 function sanitizeFilename(filename: string): string {
   return filename
-    .replace(/[\\/:"*?<>|]+/g, '-') // Replace Windows/Unix invalid chars with dash
-    .replace(/\s+/g, ' ')           // Normalize spaces (but keep them as spaces)
-    .replace(/\.+/g, '.')           // Replace multiple dots with single dot
-    .trim();                        // Remove leading/trailing spaces
+    // Then remove the numbered suffix pattern
+    .replace(/\s*\(\d+\)(?=\s*-?\s*2025)/, '')
+    // Finally clean up any remaining special characters
+    .replace(/[/\\?%*:|"<>]/g, '_')
+    .trim();
 }
 
 // Add a helper function to parse yt-dlp progress
@@ -175,13 +176,11 @@ const downloadHandler = async (
 
     // Sanitize the filename before storing
     let sanitizedFilename = filename
-      .replace(/[/\\?%*:|"<>\(\)]/g, '_')  // Replace invalid chars with underscore
-      .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
-      .replace(/\.+/g, '.')            // Replace multiple dots with single dot
-      .replace(/\((\d+)\)/g, '')       // Remove numbered parentheses like (1)
-      .replace(/\.mov$/i, '')          // Remove .mov extension
-      .replace(/\.mp4$/i, '')          // Remove .mp4 extension
-      .replace(/\.$/, '');             // Remove trailing dot
+      // Then remove the numbered suffix pattern
+      .replace(/\s*\(\d+\)(?=\s*-?\s*2025)/, '')
+      // Finally clean up any remaining special characters
+      .replace(/[/\\?%*:|"<>]/g, '_')
+      .trim();
 
     const options = {
       includeDate,
@@ -432,11 +431,11 @@ const fileHandler = (
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
       // Clean up any remaining special characters
       filename = filename
-        .replace(/[/\\?%*:|"<>\(\)]/g, '_')
-        .replace(/\s+/g, ' ')
-        .replace(/\.+/g, '.')
-        .replace(/\((\d+)\)/g, '')
-        .replace(/\.$/, '');
+        // Then remove the numbered suffix pattern
+        .replace(/\s*\(\d+\)(?=\s*-?\s*2025)/, '')
+        // Finally clean up any remaining special characters
+        .replace(/[/\\?%*:|"<>]/g, '_')
+        .trim();
       
       const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
       if (includeDate) {
@@ -446,8 +445,11 @@ const fileHandler = (
         filename += '-Archive';
       }
       downloadName = filename;
+      // Ensure the file ends with .mp4 regardless of original extension
+      if (!downloadName.toLowerCase().endsWith('.mp4')) {
+        downloadName = downloadName.replace(/\.[^/.]+$/, '') + '.mp4';
+      }
     }
-    downloadName += '.mp4';
 
     console.log('File handler request:', {
       videoId,
