@@ -8,6 +8,7 @@ import { Button, Typography, Box } from '@mui/material';
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './theme/theme';
+import { Analytics } from '@vercel/analytics/react';
 
 // Add this CSS to your index.css or create a new styles.css
 const globalStyles = `
@@ -101,6 +102,7 @@ const App: FC = () => {
           </Router>
         </Box>
       </Box>
+      <Analytics />
     </ThemeProvider>
   );
 }
