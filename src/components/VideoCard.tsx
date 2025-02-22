@@ -32,16 +32,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
 
   return (
     <div>
-      <div>
-        <FormControlLabel
-          control={<Checkbox checked={includeDate} onChange={(e) => setIncludeDate(e.target.checked)} />}
-          label="Include Date"
-        />
-        <FormControlLabel
-          control={<Checkbox checked={includeType} onChange={(e) => setIncludeType(e.target.checked)} />}
-          label="Include Type"
-        />
-      </div>
       <Button onClick={handleDownloadClick}>Download</Button>
 
       <Dialog open={isDialogOpen} onClose={handleDialogClose}>
