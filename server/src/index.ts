@@ -431,9 +431,7 @@ const fileHandler = (
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
       // Clean up any remaining special characters
       filename = filename
-        // Then remove the numbered suffix pattern
         .replace(/\s*\(\d+\)(?=\s*-?\s*2025)/, '')
-        // Finally clean up any remaining special characters
         .replace(/[/\\?%*:|"<>]/g, '_')
         .trim();
       
@@ -445,11 +443,14 @@ const fileHandler = (
         filename += '-Archive';
       }
       downloadName = filename;
-      // Ensure the file ends with .mp4 regardless of original extension
       if (!downloadName.toLowerCase().endsWith('.mp4')) {
         downloadName = downloadName.replace(/\.[^/.]+$/, '') + '.mp4';
       }
     }
+
+    // Set the correct MIME type for MP4 files
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
 
     console.log('File handler request:', {
       videoId,
@@ -467,19 +468,23 @@ const fileHandler = (
 
     // For batch downloads, just send the file without deleting
     if (batch === 'true') {
-      res.download(outputPath, downloadName);
+      fs.createReadStream(outputPath).pipe(res);
       return;
     }
 
     // For single downloads, delete after successful download
-    res.download(outputPath, downloadName, (err) => {
-      if (err) {
-        console.error('Error sending file:', err);
-        return;
-      }
+    const stream = fs.createReadStream(outputPath);
+    stream.pipe(res);
+    
+    stream.on('end', () => {
       fs.unlink(outputPath, (unlinkErr) => {
         if (unlinkErr) console.error('Error deleting file:', unlinkErr);
       });
+    });
+    
+    stream.on('error', (err) => {
+      console.error('Error sending file:', err);
+      res.status(500).end();
     });
   } catch (error) {
     console.error('Error in file handler:', error);
