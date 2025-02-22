@@ -24,7 +24,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
       await downloadVideo(video.id, video.title, { includeDate, includeType });
     } catch (error) {
       console.error('Download failed:', error);
-      // You might want to add error handling UI here
+      // TODO: Add error notification here
     }
   };
 
@@ -32,27 +32,16 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
     setIsDialogOpen(false);
   };
 
-  const twitchVideo: TwitchVideo = {
-    id: video.id,
-    user_id: '',
-    user_login: '',
-    user_name: '',
-    title: video.title,
-    description: '',
-    created_at: new Date().toISOString(),
-    published_at: new Date().toISOString(),
-    url: '',
-    thumbnail_url: '',
-    viewable: '',
-    view_count: 0,
-    language: 'en',
-    type: 'archive',
-    duration: ''
-  };
-
   return (
-    <div>
-      <Button onClick={handleDownloadClick}>Download</Button>
+    <div className="relative">
+      <Button 
+        variant="contained"
+        color="primary"
+        onClick={handleDownloadClick}
+        className="w-full"
+      >
+        Download
+      </Button>
 
       <DownloadOptionsDialog
         isOpen={isDialogOpen}
@@ -60,7 +49,24 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         onDownload={handleDownload}
         selectedCount={1}
         selectedVideos={new Set([video.id])}
-        videos={[twitchVideo]}
+        videos={[{
+          id: video.id,
+          title: video.title,
+          created_at: new Date().toISOString(),
+          type: 'archive',
+          // Add other required TwitchVideo properties
+          user_id: '',
+          user_login: '',
+          user_name: '',
+          description: '',
+          published_at: new Date().toISOString(),
+          url: '',
+          thumbnail_url: '',
+          viewable: '',
+          view_count: 0,
+          language: 'en',
+          duration: ''
+        }]}
       />
     </div>
   );

@@ -201,7 +201,19 @@ export class DownloadService {
 
   async downloadVideoByVideoId(videoId: string, title: string, options: FilenameOptions): Promise<void> {
     try {
-      console.log('Downloading video with options:', { videoId, title, options });
+      // Generate the filename with the template
+      let filename = title;
+      if (options.includeDate) {
+        const date = new Date().toISOString().split('T')[0];
+        filename = `${filename} (${date})`;
+      }
+      if (options.includeType) {
+        filename = `${filename} [Archive]`;
+      }
+      filename = `${filename}.mp4`;
+
+      console.log('Downloading video with options:', { videoId, filename, options });
+      
       const response = await fetch(`${config.API_BASE_URL}/api/videos/${videoId}/download`, {
         method: 'POST',
         headers: {
@@ -209,7 +221,7 @@ export class DownloadService {
           'Authorization': `Bearer ${this.accessToken}`
         },
         body: JSON.stringify({
-          filename: title,
+          filename: this.sanitizeFilename(filename),
           includeDate: options.includeDate,
           includeType: options.includeType
         })
@@ -221,6 +233,7 @@ export class DownloadService {
         throw new Error('Failed to download video');
       }
 
+      // Handle the streaming response
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
@@ -245,7 +258,7 @@ export class DownloadService {
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = this.sanitizeFilename(title);
+              a.download = filename;  // Use our generated filename
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
