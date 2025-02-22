@@ -174,7 +174,14 @@ const downloadHandler = async (
     }
 
     // Sanitize the filename before storing
-    let sanitizedFilename = filename.replace(/[/\\?%*:|"<>]/g, '_').replace(/\.mp4$/, '');
+    let sanitizedFilename = filename
+      .replace(/[/\\?%*:|"<>]/g, '_')  // Replace invalid chars with underscore
+      .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
+      .replace(/\.+/g, '.')            // Replace multiple dots with single dot
+      .replace(/\.mov$/i, '')          // Remove .mov extension
+      .replace(/\.mp4$/i, '')          // Remove .mp4 extension
+      .replace(/\.$/, '');             // Remove trailing dot
+
     const options = {
       includeDate,
       includeType
@@ -422,6 +429,13 @@ const fileHandler = (
     let downloadName = `${videoId}.mp4`;
     if (fs.existsSync(filenameMapPath)) {
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
+      // Clean up any remaining special characters
+      filename = filename
+        .replace(/[/\\?%*:|"<>]/g, '_')
+        .replace(/\s+/g, ' ')
+        .replace(/\.+/g, '.')
+        .replace(/\.$/, '');
+      
       const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
       if (includeDate) {
         filename += `-${new Date().toISOString().slice(0, 10)}`;
@@ -429,7 +443,7 @@ const fileHandler = (
       if (includeType) {
         filename += '-Archive';
       }
-      downloadName = `${filename}`;
+      downloadName = filename;
     }
     downloadName += '.mp4';
 
