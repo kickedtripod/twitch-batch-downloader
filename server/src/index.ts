@@ -100,10 +100,13 @@ app.use((req, res, next) => {
 // Add this function near the top of the file
 function sanitizeFilename(filename: string): string {
   return filename
-    // Then remove the numbered suffix pattern
-    .replace(/\s*\(\d+\)(?=\s*-?\s*2025)/, '')
-    // Finally clean up any remaining special characters
-    .replace(/[/\\?%*:|"<>]/g, '_')
+    // Remove any file extension
+    .replace(/\.[^/.]+$/, '')
+    // Remove any trailing numbers in parentheses, e.g., "(11)"
+    .replace(/\s*\(\d+\)\s*$/, '')
+    // Remove any other special characters
+    .replace(/[^a-zA-Z0-9\s\-_]/g, '')
+    // Trim any remaining whitespace
     .trim();
 }
 
@@ -429,14 +432,8 @@ const fileHandler = (
     let downloadName = `${videoId}.mp4`;
     if (fs.existsSync(filenameMapPath)) {
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
-      // Remove any file extension from the original filename
-      filename = filename.replace(/\.[^/.]+$/, '');
-      // Remove any trailing numbers in parentheses, e.g., "(11)"
-      filename = filename.replace(/\s*\(\d+\)\s*$/, '');
-      // Remove any other special characters
-      filename = filename.replace(/[^a-zA-Z0-9\s\-_]/g, '');
-      // Trim any remaining whitespace
-      filename = filename.trim();
+      // Sanitize the filename
+      filename = sanitizeFilename(filename);
       
       const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
       if (includeDate) {
@@ -445,9 +442,11 @@ const fileHandler = (
       if (includeType) {
         filename += '-Archive';
       }
-      // Add .mp4 extension at the very end
-      filename = `${filename}.mp4`;
       downloadName = filename;
+    }
+    // Always ensure the file ends with .mp4
+    if (!downloadName.toLowerCase().endsWith('.mp4')) {
+      downloadName += '.mp4';
     }
 
     console.log('File handler request:', {
