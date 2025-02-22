@@ -3,7 +3,6 @@ import { Button } from '@mui/material';
 import { Video } from '../types';
 import { DownloadService } from '../services/downloadService';
 import { DownloadOptionsDialog } from './DownloadOptionsDialog';
-import { TwitchVideo } from '../services/twitchApi';
 
 interface VideoCardProps {
   video: Video;
@@ -12,8 +11,7 @@ interface VideoCardProps {
 const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDownloadClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleDownloadClick = () => {
     setIsDialogOpen(true);
   };
 
@@ -26,16 +24,31 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
       }
 
       const downloadService = new DownloadService(accessToken);
-      const includeDate = template.includes('({date})');
-      const includeType = template.includes('[{type}]');
-      await downloadService.downloadVideoByVideoId(video.id, video.title, { includeDate, includeType });
+      await downloadService.downloadVideo(
+        {
+          id: video.id,
+          title: video.title,
+          created_at: new Date().toISOString(),
+          type: 'archive',
+          user_id: '',
+          user_login: '',
+          user_name: '',
+          description: '',
+          published_at: new Date().toISOString(),
+          url: '',
+          thumbnail_url: '',
+          viewable: '',
+          view_count: 0,
+          language: 'en',
+          duration: ''
+        },
+        template,  // Pass the template directly
+        undefined,
+        false
+      );
     } catch (error) {
       console.error('Download failed:', error);
     }
-  };
-
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
   };
 
   return (
@@ -44,14 +57,13 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         variant="contained"
         color="primary"
         onClick={handleDownloadClick}
-        className="w-full"
       >
         Download
       </Button>
 
       <DownloadOptionsDialog
         isOpen={isDialogOpen}
-        onClose={handleDialogClose}
+        onClose={() => setIsDialogOpen(false)}
         onDownload={handleDownload}
         selectedCount={1}
         selectedVideos={new Set([video.id])}
