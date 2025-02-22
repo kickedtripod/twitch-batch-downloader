@@ -469,16 +469,15 @@ const fileHandler = (
 
     // For batch downloads, just send the file without deleting
     if (batch === 'true') {
-      res.download(outputPath, downloadName);
+      res.attachment(downloadName);
+      res.sendFile(outputPath);
       return;
     }
 
     // For single downloads, delete after successful download
-    res.download(outputPath, downloadName, (err) => {
-      if (err) {
-        console.error('Error sending file:', err);
-        return;
-      }
+    res.attachment(downloadName);
+    res.sendFile(outputPath, (err) => {
+      if (err) console.error('Error sending file:', err);
       fs.unlink(outputPath, (unlinkErr) => {
         if (unlinkErr) console.error('Error deleting file:', unlinkErr);
       });
