@@ -429,8 +429,14 @@ const fileHandler = (
     let downloadName = `${videoId}.mp4`;
     if (fs.existsSync(filenameMapPath)) {
       let filename = fs.readFileSync(filenameMapPath, 'utf8').trim();
-      // Get just the base name before any numbers or dates
-      filename = filename.split('(')[0].trim();
+      // Remove any file extension from the original filename
+      filename = filename.replace(/\.[^/.]+$/, '');
+      // Remove any trailing numbers in parentheses, e.g., "(11)"
+      filename = filename.replace(/\s*\(\d+\)\s*$/, '');
+      // Remove any other special characters
+      filename = filename.replace(/[^a-zA-Z0-9\s\-_]/g, '');
+      // Trim any remaining whitespace
+      filename = filename.trim();
       
       const { includeDate, includeType } = JSON.parse(fs.readFileSync(filenameMapPath, 'utf8').split('\n')[1]);
       if (includeDate) {
@@ -439,8 +445,8 @@ const fileHandler = (
       if (includeType) {
         filename += '-Archive';
       }
-      // Add .mp4 extension
-      filename += '.mp4';
+      // Add .mp4 extension at the very end
+      filename = `${filename}.mp4`;
       downloadName = filename;
     }
 
